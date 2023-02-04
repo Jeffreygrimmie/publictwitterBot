@@ -1,5 +1,6 @@
 user:
-  CONSUMER_KEY: #twitter api key
-  CONSUMER_SECRET: #twitter api secret
-  ACCESS_TOKEN: #twitter access token
-  ACCESS_TOKEN_SECRET: #twitter access token secret
+  twitterConsumerKey: #twitter api key
+  twitterConsumerSecret: #twitter api secret
+  twitterAccessToken: #twitter access token
+  twitterAccessTokenSecret: #twitter access token secret
+  chatGPTapiKey: #ChatGPT api key

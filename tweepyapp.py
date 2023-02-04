@@ -1,20 +1,43 @@
 import tweepy
-
-yaml.warnings({'YAMLLoadWarning': False})
-conf = yaml.safe_load(open('info.yml'))
-
-CONSUMER_KEY = conf['user']['CONSUMER_KEY']
-CONSUMER_SECRET = conf['user']['CONSUMER_SECRET']
-ACCESS_TOKEN = conf['user']['ACCESS_TOKEN']
-ACCESS_TOKEN_SECRET = conf['user']['ACCESS_TOKEN_SECRET']
+import yaml
+import openai
 
 def tweet(status):
-    auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_SECRET)
-    auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
+    auth = tweepy.OAuthHandler(twitterConsumerKey, twitterConsumerSecret)
+    auth.set_access_token(twitterAccessToken, twitterAccessTokenSecret)
     api = tweepy.API(auth)
     api.update_status(status)
 
-status = "Automated: Still testing code!"
+def chatGPT(prompt):
+    model_engine = "text-davinci-003"
+    max_tokens = 280
+    completion = openai.Completion.create(
+        engine=model_engine,
+        prompt=prompt,
+        max_tokens=max_tokens,
+        temperature=0.5,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0
+    )
+    return completion.choices[0].text
 
-tweet(status)
+yaml.warnings({'YAMLLoadWarning': False})
+conf = yaml.safe_load(open('info.yml'))
+twitterConsumerKey = conf['user']['twitterConsumerKey']
+twitterConsumerSecret = conf['user']['twitterConsumerSecret']
+twitterAccessToken = conf['user']['twitterAccessToken']
+twitterAccessTokenSecret = conf['user']['twitterAccessTokenSecret']
+openai.api_key = conf['user']['chatGPTapiKey']
+
+prompt = 'Write a  tweet: ' + str(input("Enter prompt: "))
+print(prompt)
+print(chatGPT(prompt))
+
+post = input('Post to Twitter? y/n:')
+
+if post == 'y':
+    tweet(chatGPT(prompt))
+else:
+    print('Not posted')
 
