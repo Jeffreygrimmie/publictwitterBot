@@ -30,14 +30,15 @@ twitterAccessToken = conf['user']['twitterAccessToken']
 twitterAccessTokenSecret = conf['user']['twitterAccessTokenSecret']
 openai.api_key = conf['user']['chatGPTapiKey']
 
-prompt = 'Write a  tweet: ' + str(input("Enter prompt: "))
+prompt = 'Write a tweet: ' + str(input("Enter prompt: "))
 print(prompt)
-print(chatGPT(prompt))
+status = chatGPT(prompt)
+print(status)
 
 post = input('Post to Twitter? y/n:')
 
 if post == 'y':
-    tweet(chatGPT(prompt))
+    tweet(status)
 else:
     print('Not posted')
 
