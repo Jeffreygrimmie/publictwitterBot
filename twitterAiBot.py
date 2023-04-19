@@ -1,6 +1,7 @@
 import tweepy
 import yaml
 import openai
+from textblob import TextBlob
 
 def load_config(file_path):
     with open(file_path, 'r') as config_file:
@@ -29,15 +30,35 @@ def chatGPT(api_key, prompt):
     )
     return completion.choices[0].text
 
+def correct_spelling(text):
+    return str(TextBlob(text).correct())
+
 def main():
     config = load_config('info.yml')
     api = authenticate_twitter(config['user'])
     chatGPT_api_key = config['user']['chatGPTapiKey']
 
-    prompt = 'Write a tweet: ' + str(input("Enter prompt: "))
+    user_input = input("Enter prompt: ")
+    corrected_input = correct_spelling(user_input)
+    print(f"Corrected input: {corrected_input}")
+
+    prompt = 'Write a tweet: ' + corrected_input
     print(prompt)
-    status = chatGPT(chatGPT_api_key, prompt)
-    print(status)
+
+    satisfactory = False
+    while not satisfactory:
+        status = chatGPT(chatGPT_api_key, prompt)
+        print(status)
+        user_feedback = input('Is this satisfactory? y/n/change:')
+
+        if user_feedback.lower() == 'y':
+            satisfactory = True
+        elif user_feedback.lower() == 'change':
+            user_input = input("Enter a new prompt: ")
+            corrected_input = correct_spelling(user_input)
+            print(f"Corrected input: {corrected_input}")
+            prompt = 'Write a tweet: ' + corrected_input
+            print(prompt)
 
     post = input('Post to Twitter? y/n:')
 
