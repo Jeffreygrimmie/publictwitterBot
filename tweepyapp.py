@@ -2,13 +2,20 @@ import tweepy
 import yaml
 import openai
 
-def tweet(status):
-    auth = tweepy.OAuthHandler(twitterConsumerKey, twitterConsumerSecret)
-    auth.set_access_token(twitterAccessToken, twitterAccessTokenSecret)
-    api = tweepy.API(auth)
+def load_config(file_path):
+    with open(file_path, 'r') as config_file:
+        return yaml.safe_load(config_file)
+
+def authenticate_twitter(conf):
+    auth = tweepy.OAuthHandler(conf['twitterConsumerKey'], conf['twitterConsumerSecret'])
+    auth.set_access_token(conf['twitterAccessToken'], conf['twitterAccessTokenSecret'])
+    return tweepy.API(auth)
+
+def tweet(api, status):
     api.update_status(status)
 
-def chatGPT(prompt):
+def chatGPT(api_key, prompt):
+    openai.api_key = api_key
     model_engine = "text-davinci-003"
     max_tokens = 280
     completion = openai.Completion.create(
@@ -22,23 +29,22 @@ def chatGPT(prompt):
     )
     return completion.choices[0].text
 
-yaml.warnings({'YAMLLoadWarning': False})
-conf = yaml.safe_load(open('info.yml'))
-twitterConsumerKey = conf['user']['twitterConsumerKey']
-twitterConsumerSecret = conf['user']['twitterConsumerSecret']
-twitterAccessToken = conf['user']['twitterAccessToken']
-twitterAccessTokenSecret = conf['user']['twitterAccessTokenSecret']
-openai.api_key = conf['user']['chatGPTapiKey']
+def main():
+    config = load_config('info.yml')
+    api = authenticate_twitter(config['user'])
+    chatGPT_api_key = config['user']['chatGPTapiKey']
 
-prompt = 'Write a tweet: ' + str(input("Enter prompt: "))
-print(prompt)
-status = chatGPT(prompt)
-print(status)
+    prompt = 'Write a tweet: ' + str(input("Enter prompt: "))
+    print(prompt)
+    status = chatGPT(chatGPT_api_key, prompt)
+    print(status)
 
-post = input('Post to Twitter? y/n:')
+    post = input('Post to Twitter? y/n:')
 
-if post == 'y':
-    tweet(status)
-else:
-    print('Not posted')
+    if post.lower() == 'y':
+        tweet(api, status)
+    else:
+        print('Not posted')
 
+if __name__ == '__main__':
+    main()
